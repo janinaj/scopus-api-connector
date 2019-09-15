@@ -2,7 +2,7 @@ from lxml import etree
 from datetime import datetime
 from collections import defaultdict
 from urllib.request import urlopen
-#from rake_nltk import Rake
+from rake_nltk import Rake
 import os, json, time, shutil
 
 CURRENT_YEAR = 2019
@@ -92,23 +92,21 @@ class ScopusPublication():
     def rake_keywords(self):
         return self.rake_keywords_
 
-    def __init__(self, data_folder, eid = None, doi = None, pmid = None, download_citations = True):
-        self.API_KEY = None
+    def __init__(self, data_folder, id_, id_type):            
+        self.id_ = id_
         self.eid_ = None
         self.doi_ = None
         self.pmid_ = None
-
-        if eid != None:
-            self.eid_ = eid.rjust(10, '0')
-            self.id_ = self.eid_
-            
-        if doi != None:
-            self.doi_ = doi
+        
+        if id_type == 'EID':
+            # if the EID is less than 10 characters, pad zeroes on the left
+            self.eid_ = id_.rjust(10, '0')
+        elif id_type == 'DOI':
+            self.doi_ = id_
+            # replace / with . since id will be the folder name for the publication
             self.id_ = self.doi_.replace('/', '.')
-           
-        if pmid != None:
-            self.pmid_ = pmid
-            self.id_ = self.pmid_
+        elif id_type == 'PMID':
+            self.pmid_ = id_
        
         self.data_folder_ = data_folder
         self.pub_directory_ = os.path.join(data_folder, self.id_)
@@ -128,7 +126,7 @@ class ScopusPublication():
         self.article_type_ = None
         self.article_subtype_ = None
 
-    def set_api_key(file = None, key = None):
+    def set_api_key(self, file = None, key = None):
         if key is None and file is None:
             print('Please provide API key or path to file containing API KEY.')
         if key is not None:
