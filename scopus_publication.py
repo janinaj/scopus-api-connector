@@ -2,8 +2,8 @@ from lxml import etree
 from datetime import datetime
 from collections import defaultdict
 from urllib.request import urlopen
-from rake_nltk import Rake
-import os, json, time, shutil
+#from rake_nltk import Rake
+import os, json, time, shutil, codecs
 
 CURRENT_YEAR = 2019
 
@@ -308,7 +308,7 @@ class ScopusPublication():
             if os.path.exists(self.citations_folder_):
                 for file in os.listdir(self.citations_folder_):
                     if '.json' in file:
-                        with open(os.path.join(self.citations_folder_, file), 'r') as f:
+                        with codecs.open(os.path.join(self.citations_folder_, file), 'r', 'utf-8') as f:
                             json_data = json.load(f)
 
                             self.total_citations = int(json_data['search-results']['opensearch:totalResults'])
@@ -505,27 +505,28 @@ class ScopusPublication():
                 if reference['eid'] != self.eid_:
                     self.co_cited_counts_[citation['eid']] += 1
 
-    def get_rake_keywords(self):
-        self.rake_keywords_ = []
+# uncomment for now: RAKE throws an error somehow
+    # def get_rake_keywords(self):
+    #     self.rake_keywords_ = []
 
-        if not os.path.exists(self.rake_keywords_file_path_):
-            text = self.title.encode('ascii', 'ignore').strip()
-            text += '\n' + self.abstract.encode('ascii', 'ignore').strip()
+    #     if not os.path.exists(self.rake_keywords_file_path_):
+    #         text = self.title.encode('ascii', 'ignore').strip()
+    #         text += '\n' + self.abstract.encode('ascii', 'ignore').strip()
 
-            with open(self.rake_keywords_file_path_, 'w') as o:
-                if text.strip() != '':
-                    try:
-                        r = Rake()
-                        r.extract_keywords_from_text(text)
-                        self.rake_keywords_ = r.get_ranked_phrases()
+    #         with open(self.rake_keywords_file_path_, 'w') as o:
+    #             if text.strip() != '':
+    #                 try:
+    #                     r = Rake()
+    #                     r.extract_keywords_from_text(text)
+    #                     self.rake_keywords_ = r.get_ranked_phrases()
                     
-                        if len(self.rake_keywords_) > 0:
-                            for keyword in self.rake_keywords_:
-                                o.write(keyword)
-                                o.write('\n')
-                    except:
-                        pass
-        else:
-            with open(self.rake_keywords_file_path_, 'r') as f:
-                for line in f:
-                    self.rake_keywords_.append(line.strip())
+    #                     if len(self.rake_keywords_) > 0:
+    #                         for keyword in self.rake_keywords_:
+    #                             o.write(keyword)
+    #                             o.write('\n')
+    #                 except:
+    #                     pass
+    #     else:
+    #         with open(self.rake_keywords_file_path_, 'r') as f:
+    #             for line in f:
+    #                 self.rake_keywords_.append(line.strip())
